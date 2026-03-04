@@ -1,12 +1,12 @@
-name: Hexo Deploy
+name: Hexo Auto Deploy
 
 on:
   push:
     branches:
-      - main # 确保你的源码是在 main 分支，如果你的分支叫 master 请改为 master
+      - main  # 确保你推送的是 main 分支
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,13 +16,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Deploy
-        run: |
-          git config --global user.name "Bega"
-          git config --global user.email "你的GitHub邮箱"
-          npx hexo clean
-          npx hexo deploy
+      - name: Deploy to GitHub Pages
+        uses: sma11black/hexo-action@v1.0.4
+        with:
+          deploy_key: ${{ secrets.HEXO_DEPLOY_KEY }} # 暂时不用担心这个，如果报错我再教你加密钥
+          user_name: bega0
+          user_email: 你的GitHub邮箱
