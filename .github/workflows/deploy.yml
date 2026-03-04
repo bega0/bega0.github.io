@@ -23,15 +23,20 @@ jobs:
           npm install -g hexo-cli
           npm install
 
-      - name: Build and Deploy
-        run: |
+      -  name: Build and Deploy
+         run: |
           git config --global user.name "bega0"
           git config --global user.email "你的GitHub邮箱"
           npx hexo clean
           npx hexo g
-          # 这一步将生成的静态页面强制推送到 gh-pages 分支
-          cd public
-          git init
-          git add .
-          git commit -m "Auto deploy from GitHub Actions"
-          git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" master:gh-pages
+          # 检查 public 文件夹是否生成了内容
+          if [ -d "public" ] && [ "$(ls -A public)" ]; then
+            cd public
+            git init
+            git add .
+            git commit -m "Auto deploy from GitHub Actions"
+            git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" master:gh-pages
+          else
+            echo "Error: No files generated in public directory. Check your source/_posts folder."
+            exit 1
+          fi
