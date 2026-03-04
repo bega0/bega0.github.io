@@ -3,7 +3,7 @@ name: Hexo Auto Deploy
 on:
   push:
     branches:
-      - main  # 确保你推送的是 main 分支
+      - main
 
 jobs:
   build-and-deploy:
@@ -16,14 +16,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
+          # 注意：这里去掉了 cache 选项，避免它寻找不存在的 lock 文件
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install Hexo and Plugins
+        run: |
+          npm install -g hexo-cli
+          npm install
 
-      - name: Deploy to GitHub Pages
-        uses: sma11black/hexo-action@v1.0.4
-        with:
-          deploy_key: ${{ secrets.HEXO_DEPLOY_KEY }} # 暂时不用担心这个，如果报错我再教你加密钥
-          user_name: bega0
-          user_email: 你的GitHub邮箱
+      - name: Build and Deploy
+        run: |
+          git config --global user.name "bega0"
+          git config --global user.email "你的GitHub邮箱"
+          npx hexo clean
+          npx hexo g
+          # 这一步将生成的静态页面强制推送到 gh-pages 分支
+          cd public
+          git init
+          git add .
+          git commit -m "Auto deploy from GitHub Actions"
+          git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" master:gh-pages
