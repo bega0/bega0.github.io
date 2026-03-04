@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          # 注意：这里去掉了 cache 选项，避免它寻找不存在的 lock 文件
+          
 
       - name: Install Hexo and Plugins
         run: |
