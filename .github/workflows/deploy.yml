@@ -1,0 +1,42 @@
+name: Hexo Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+
+      - name: Install Hexo and Plugins
+        run: |
+          npm install -g hexo-cli
+          npm install
+
+      -  name: Build and Deploy
+         run: |
+          git config --global user.name "bega0"
+          git config --global user.email "你的GitHub邮箱"
+          npx hexo clean
+          npx hexo g
+          # 检查 public 文件夹是否生成了内容
+          if [ -d "public" ] && [ "$(ls -A public)" ]; then
+            cd public
+            git init
+            git add .
+            git commit -m "Auto deploy from GitHub Actions"
+            git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" master:gh-pages
+          else
+            echo "Error: No files generated in public directory. Check your source/_posts folder."
+            exit 1
+          fi
